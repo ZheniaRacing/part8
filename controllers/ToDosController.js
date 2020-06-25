@@ -36,26 +36,12 @@ ToDosController.index = function(req, res){
 };
 
 ToDosController.show = function(req, res){
-	/*var newToDo = new ToDo({"description":req.body.description, "tags":req.body.tags});
-	newToDo.save(function(err, result){
-		if(err !== null){
-			console.log(err);
-			res.send("ERROR");
-		}
-		else{
-			ToDo.find({}, function(err, result){
-				if(err !== null){
-					res.send("ERROR");
-				}
-				res.json(result);
-			});
-		}
-	});*/
+	
 };
 
 ToDosController.create = function(req, res){
 	var username = req.params.username || null,
-		newToDo = new ToDo({"description": req.body.description, "tags": req.body.tags});
+		newToDo = new ToDo({"petName": req.body.petName, "date": req.body.date});
 	User.find({"username": username}, function(err, result){
 		if(err){
 			res.send(500);
@@ -81,13 +67,40 @@ ToDosController.create = function(req, res){
 };
 
 ToDosController.update = function(req, res){
-	console.log("Обновить");
-	res.send(200);
+	var id = req.params.id;
+	var newDate = {$set: {date: req.body.date}};
+	ToDo.updateOne({"_id":id}, newDate, function(err, todo){
+		if(err !== null){
+			res.status(500).json(err);
+		}
+		else{
+			if(todo.n === 1 && todo.nModified === 1 && todo.ok === 1){
+				res.status(200).json(todo);
+			}
+			else{
+				console.log(todo);
+				res.status(404).json({"status": 404});
+			}
+		}
+	});
 };
 
 ToDosController.destroy = function(req, res){
-	console.log("КРУШИТЬ РАЗРУШАТЬ!");
-	res.send(200);
+	var id = req.params.id;
+	console.log(id);
+	ToDo.deleteOne({"_id":id}, function (err, todo){
+		if(err !== null){
+			res.status(500).json(err);
+		}
+		else{
+			if(todo.n === 1 && todo.deletedCount === 1 && todo.ok === 1){
+				res.status(200).json(todo);
+			}
+			else{
+				res.status(404).json({"status": 404});
+			}
+		}
+	});
 };
 
 module.exports = ToDosController;
